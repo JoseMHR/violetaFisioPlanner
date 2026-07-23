@@ -675,7 +675,7 @@
                     {/* Main Content Area */}
                     <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6">
                         {}
-                        {/* VISTA 1: CUADRANTE GENERAL MATRIZ EN FRANSAS DE 15 MINUTOS */}
+                        {/* VISTA 1: CUADRANTE GENERAL MATRIZ EN FRANJAS DE 15 MINUTOS */}
                         {vistaActual === "matriz" && (
                             <div className="space-y-4">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-800/50 p-3.5 rounded-2xl border border-slate-700">
@@ -718,60 +718,85 @@
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-700/30 text-xs">
-                                            {HORARIOS_15MIN.map(hora => (
-                                                <tr key={hora} className="hover:bg-slate-700/20 transition-colors">
-                                                    <td className="p-1.5 text-center font-bold text-slate-400 sticky left-0 bg-slate-900 z-10 border-r border-slate-700 text-[11px] shadow-md">
-                                                        {hora}
-                                                    </td>
-                                                    {FISIOTERAPEUTAS.map(fisio => {
-                                                        const key = `${fisio}_${diaSeleccionado}_${hora}`;
-                                                        const s = sesiones[key];
+                                            {(() => {
+                                                /* Mapa para rastrear cuántas filas omitir por columna al usar rowSpan */
+                                                const skipMap = {};
+                                                FISIOTERAPEUTAS.forEach(f => { skipMap[f] = 0; });
 
-                                                        let bg = "bg-slate-900/30 hover:bg-slate-700/40 text-slate-500 cursor-pointer";
-                                                        let label = "+";
-
-                                                        if (s) {
-                                                            if (s.tipo === "COORDINACION") {
-                                                                bg = "bg-purple-950/70 border border-purple-500/40 text-purple-200 font-medium";
-                                                                label = s.label;
-                                                            } else if (s.tipo === "PISCINA") {
-                                                                bg = "bg-cyan-950/80 border border-cyan-500/50 text-cyan-200 font-semibold";
-                                                                label = `${s.label} (${s.horaAgua || 'Agua'})`;
-                                                            } else if (s.tipo === "RESPI") {
-                                                                bg = "bg-teal-950/80 border border-teal-500/50 text-teal-200 font-semibold";
-                                                                label = s.label;
-                                                            } else if (s.tipo === "DESAYUNO") {
-                                                                bg = "bg-slate-800/60 text-slate-500 italic";
-                                                                label = s.label;
-                                                            } else if (s.tipo === "DESAHABILITADO") {
-                                                                bg = "bg-slate-950/80 text-slate-600";
-                                                                label = s.label;
-                                                            } else if (s.tipo === "INDIVIDUAL") {
-                                                                bg = "bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 font-medium hover:bg-emerald-900/60 cursor-pointer";
-                                                                label = s.alumno;
+                                                return HORARIOS_15MIN.map(hora => (
+                                                    <tr key={hora} className="hover:bg-slate-700/20 transition-colors">
+                                                        <td className="p-1.5 text-center font-bold text-slate-400 sticky left-0 bg-slate-900 z-10 border-r border-slate-700 text-[11px] shadow-md border-b border-slate-800/50">
+                                                            {hora}
+                                                        </td>
+                                                        {FISIOTERAPEUTAS.map(fisio => {
+                                                            if (skipMap[fisio] > 0) {
+                                                                skipMap[fisio]--;
+                                                                return null; // Omitir celda pues está cubierta por el rowSpan superior
                                                             }
-                                                        }
 
-                                                        return (
-                                                            <td
-                                                                key={key}
-                                                                onClick={() => abrirModalAsignacion(fisio, diaSeleccionado, hora)}
-                                                                className={`p-1 text-center border-r border-slate-700/30 last:border-0 transition-all ${bg}`}
-                                                            >
-                                                                <div className="truncate max-w-[90px] mx-auto text-[11px]" title={label}>
-                                                                    {label}
-                                                                </div>
-                                                            </td>
-                                                        );
-                                                    })}
-                                                </tr>
-                                            ))}
+                                                            const key = `${fisio}_${diaSeleccionado}_${hora}`;
+                                                            const s = sesiones[key];
+
+                                                            let span = 1;
+                                                            let bg = "bg-slate-900/30 hover:bg-slate-700/40 text-slate-500 cursor-pointer border-b border-slate-800/40";
+                                                            let label = "+";
+
+                                                            if (s) {
+                                                                const dur = s.duracion || 45;
+                                                                span = Math.max(1, Math.round(dur / 15));
+                                                                skipMap[fisio] = span - 1;
+
+                                                                if (s.tipo === "COORDINACION") {
+                                                                    bg = "bg-purple-950/90 border border-purple-500/50 text-purple-200 font-bold shadow-inner";
+                                                                    label = s.label;
+                                                                } else if (s.tipo === "PISCINA") {
+                                                                    bg = "bg-cyan-950/90 border border-cyan-500/60 text-cyan-200 font-bold shadow-inner";
+                                                                    label = `${s.label} (${s.horaAgua || 'Agua'})`;
+                                                                } else if (s.tipo === "RESPI") {
+                                                                    bg = "bg-teal-950/90 border border-teal-500/60 text-teal-200 font-bold shadow-inner";
+                                                                    label = s.label;
+                                                                } else if (s.tipo === "DESAYUNO") {
+                                                                    bg = "bg-slate-800/80 text-slate-400 italic text-[10px]";
+                                                                    label = s.label;
+                                                                } else if (s.tipo === "DESAHABILITADO") {
+                                                                    bg = "bg-slate-950/90 text-slate-600";
+                                                                    label = s.label;
+                                                                } else if (s.tipo === "INDIVIDUAL") {
+                                                                    bg = "bg-emerald-950/90 border border-emerald-500/60 text-emerald-200 font-bold hover:bg-emerald-900/80 cursor-pointer shadow-inner";
+                                                                    label = s.alumno;
+                                                                }
+                                                            }
+
+                                                            return (
+                                                                <td
+                                                                    key={key}
+                                                                    rowSpan={span}
+                                                                    onClick={() => abrirModalAsignacion(fisio, diaSeleccionado, hora)}
+                                                                    className={`p-2 text-center border-r border-b border-slate-700/40 align-middle transition-all ${bg}`}
+                                                                >
+                                                                    <div className="flex flex-col items-center justify-center h-full gap-0.5 min-h-[32px]">
+                                                                        <span className="truncate max-w-[110px] text-[11px] leading-tight" title={label}>
+                                                                            {label}
+                                                                        </span>
+                                                                        {s && s.tipo === "INDIVIDUAL" && (
+                                                                            <span className="text-[9px] text-emerald-400/80 font-normal">
+                                                                                (45 min)
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            );
+                                                        })}
+                                                    </tr>
+                                                ));
+                                            })()}
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         )}
 
+                        {}
                         {/* VISTA 2: VISTA POR FISIOTERAPEUTA */}
                         {vistaActual === "fisio" && (
                             <div className="space-y-4">
@@ -804,59 +829,83 @@
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-700/30 text-xs">
-                                            {HORARIOS_15MIN.map(hora => (
-                                                <tr key={hora} className="hover:bg-slate-700/20">
-                                                    <td className="p-1.5 text-center font-bold text-slate-400 border-r border-slate-700 bg-slate-900/50 sticky left-0 z-10 text-[11px]">
-                                                        {hora}
-                                                    </td>
-                                                    {DIAS.map(dia => {
-                                                        const key = `${fisioSeleccionado}_${dia}_${hora}`;
-                                                        const s = sesiones[key];
+                                            {(() => {
+                                                const skipMapDia = {};
+                                                DIAS.forEach(d => { skipMapDia[d] = 0; });
 
-                                                        let bg = "bg-slate-900/30 text-slate-500 cursor-pointer hover:bg-slate-700/40";
-                                                        let label = "+";
-
-                                                        if (s) {
-                                                            if (s.tipo === "COORDINACION") {
-                                                                bg = "bg-purple-950/70 border border-purple-500/40 text-purple-200 font-medium";
-                                                                label = s.label;
-                                                            } else if (s.tipo === "PISCINA") {
-                                                                bg = "bg-cyan-950/80 border border-cyan-500/50 text-cyan-200 font-semibold";
-                                                                label = s.label;
-                                                            } else if (s.tipo === "RESPI") {
-                                                                bg = "bg-teal-950/80 border border-teal-500/50 text-teal-200 font-semibold";
-                                                                label = s.label;
-                                                            } else if (s.tipo === "DESAYUNO") {
-                                                                bg = "bg-slate-800/60 text-slate-500 italic";
-                                                                label = s.label;
-                                                            } else if (s.tipo === "DESAHABILITADO") {
-                                                                bg = "bg-slate-950/80 text-slate-600";
-                                                                label = s.label;
-                                                            } else if (s.tipo === "INDIVIDUAL") {
-                                                                bg = "bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 font-medium cursor-pointer hover:bg-emerald-900/60";
-                                                                label = s.alumno;
+                                                return HORARIOS_15MIN.map(hora => (
+                                                    <tr key={hora} className="hover:bg-slate-700/20">
+                                                        <td className="p-1.5 text-center font-bold text-slate-400 border-r border-b border-slate-700 bg-slate-900/50 sticky left-0 z-10 text-[11px]">
+                                                            {hora}
+                                                        </td>
+                                                        {DIAS.map(dia => {
+                                                            if (skipMapDia[dia] > 0) {
+                                                                skipMapDia[dia]--;
+                                                                return null;
                                                             }
-                                                        }
 
-                                                        return (
-                                                            <td
-                                                                key={key}
-                                                                onClick={() => abrirModalAsignacion(fisioSeleccionado, dia, hora)}
-                                                                className={`p-1 text-center border-r border-slate-700/30 last:border-0 transition-all text-[11px] ${bg}`}
-                                                            >
-                                                                {label}
-                                                            </td>
-                                                        );
-                                                    })}
-                                                </tr>
-                                            ))}
+                                                            const key = `${fisioSeleccionado}_${dia}_${hora}`;
+                                                            const s = sesiones[key];
+
+                                                            let span = 1;
+                                                            let bg = "bg-slate-900/30 text-slate-500 cursor-pointer hover:bg-slate-700/40 border-b border-slate-800/40";
+                                                            let label = "+";
+
+                                                            if (s) {
+                                                                const dur = s.duracion || 45;
+                                                                span = Math.max(1, Math.round(dur / 15));
+                                                                skipMapDia[dia] = span - 1;
+
+                                                                if (s.tipo === "COORDINACION") {
+                                                                    bg = "bg-purple-950/90 border border-purple-500/50 text-purple-200 font-bold shadow-inner";
+                                                                    label = s.label;
+                                                                } else if (s.tipo === "PISCINA") {
+                                                                    bg = "bg-cyan-950/90 border border-cyan-500/60 text-cyan-200 font-bold shadow-inner";
+                                                                    label = s.label;
+                                                                } else if (s.tipo === "RESPI") {
+                                                                    bg = "bg-teal-950/90 border border-teal-500/60 text-teal-200 font-bold shadow-inner";
+                                                                    label = s.label;
+                                                                } else if (s.tipo === "DESAYUNO") {
+                                                                    bg = "bg-slate-800/80 text-slate-400 italic text-[10px]";
+                                                                    label = s.label;
+                                                                } else if (s.tipo === "DESAHABILITADO") {
+                                                                    bg = "bg-slate-950/90 text-slate-600";
+                                                                    label = s.label;
+                                                                } else if (s.tipo === "INDIVIDUAL") {
+                                                                    bg = "bg-emerald-950/90 border border-emerald-500/60 text-emerald-200 font-bold cursor-pointer hover:bg-emerald-900/80 shadow-inner";
+                                                                    label = s.alumno;
+                                                                }
+                                                            }
+
+                                                            return (
+                                                                <td
+                                                                    key={key}
+                                                                    rowSpan={span}
+                                                                    onClick={() => abrirModalAsignacion(fisioSeleccionado, dia, hora)}
+                                                                    className={`p-2 text-center border-r border-b border-slate-700/40 align-middle transition-all text-[11px] ${bg}`}
+                                                                >
+                                                                    <div className="flex flex-col items-center justify-center h-full gap-0.5 min-h-[32px]">
+                                                                        <span className="truncate max-w-[120px]" title={label}>
+                                                                            {label}
+                                                                        </span>
+                                                                        {s && s.tipo === "INDIVIDUAL" && (
+                                                                            <span className="text-[9px] text-emerald-400/80 font-normal">
+                                                                                (45 min)
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            );
+                                                        })}
+                                                    </tr>
+                                                ));
+                                            })()}
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         )}
 
-                        {}
                         {/* VISTA 3: NUEVA VISTA POR ALUMNO SOLICITADA POR VIOLE */}
                         {vistaActual === "alumno" && (
                             <div className="space-y-4">
