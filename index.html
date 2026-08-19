@@ -71,7 +71,6 @@
             "16:00"
         ];
 
-        // Catálogo principal de Alumnos con todas las consideraciones y Fisios Responsables/Secundarios
         const CATALOGO_ALUMNOS = [
             { id: 1, nombre: "MARIO ÁLVAREZ", centro: "CEE", cuota: 4, fisioResponsable: "SANDRA", fisioSecundario: "ANGELA", observaciones: "3 ind + 1 taller. Prefiere mañanas" },
             { id: 2, nombre: "DIANA APARICIO", centro: "CEE", cuota: 3, fisioResponsable: "VIOLETA", fisioSecundario: "FERNANDO", observaciones: "3 sesiones individuales" },
@@ -111,7 +110,6 @@
             { id: 36, nombre: "SOFÍA PATRICIO", centro: "CEE", cuota: 4, fisioResponsable: "SANDRA", fisioSecundario: "FERNANDO", observaciones: "Llega cuando quiere. Comer entre 12:30 y 14:30" }
         ];
 
-        // Horarios cruzados de Logopedia y TO (del Excel común)
         const HORARIOS_OTRAS_DISCIPLINAS = [
             { alumno: "MARIO ÁLVAREZ", dia: "LUNES", hora: "10:30", duracion: 45, disciplina: "Logopedia" },
             { alumno: "ETHAN ELEY", dia: "JUEVES", hora: "15:00", duracion: 45, disciplina: "Logopedia" },
@@ -121,7 +119,6 @@
             { alumno: "MARCOS FERNÁNDEZ", dia: "MARTES", hora: "12:15", duracion: 45, disciplina: "Logopedia" }
         ];
 
-        // Bloques Institucionales Inamovibles (Reuniones, Descansos, Respi, etc.)
         const ESTRUCTURA_INAMOVIBLE = {
             "SANDRA_LUNES_09:00": { tipo: "COORDINACION", label: "Coord. Servicios", bloqueo: true, duracion: 45 },
             "SANDRA_MARTES_09:00": { tipo: "COORDINACION", label: "SESIÓN CLÍNICA", bloqueo: true, duracion: 45 },
@@ -130,14 +127,12 @@
             "VIOLETA_LUNES_09:45": { tipo: "COORDINACION", label: "ECA", bloqueo: true, duracion: 45 },
             "VIOLETA_MARTES_09:45": { tipo: "COORDINACION", label: "ECA", bloqueo: true, duracion: 45 },
 
-            // Respiratorio diario rotativo
             "ANGELA_LUNES_09:45": { tipo: "RESPI", label: "RESPIRATORIO", bloqueo: true, duracion: 45 },
             "NOELIA_MARTES_09:45": { tipo: "RESPI", label: "RESPIRATORIO", bloqueo: true, duracion: 45 },
             "ESTHER_MIÉRCOLES_09:45": { tipo: "RESPI", label: "RESPIRATORIO", bloqueo: true, duracion: 45 },
             "CHIARA_JUEVES_09:45": { tipo: "RESPI", label: "RESPIRATORIO", bloqueo: true, duracion: 45 },
             "JUAN_VIERNES_09:45": { tipo: "RESPI", label: "RESPIRATORIO", bloqueo: true, duracion: 45 },
 
-            // Descansos fijos
             "SANDRA_LUNES_11:15": { tipo: "DESAYUNO", label: "Desayuno", bloqueo: true, duracion: 15 },
             "ANGELA_LUNES_11:15": { tipo: "DESAYUNO", label: "Desayuno", bloqueo: true, duracion: 15 },
             "VIOLETA_LUNES_11:15": { tipo: "DESAYUNO", label: "Desayuno", bloqueo: true, duracion: 15 },
@@ -211,10 +206,8 @@
             const [modalAsignacion, setModalAsignacion] = useState(null);
             const [notificacion, setNotificacion] = useState(null);
             
-            // Catálogo editable de Alumnos (para guardar Fisio Principal y Secundario)
             const [catalogoAlumnos, setCatalogoAlumnos] = useState(CATALOGO_ALUMNOS);
 
-            // Estado de Sesiones con Historial
             const [sesiones, setSesionesState] = useState(() => ({
                 ...ESTRUCTURA_INAMOVIBLE,
                 ...PISCINA_SEMANA_1
@@ -278,7 +271,6 @@
                 setTimeout(() => setNotificacion(null), 4000);
             };
 
-            // Actualizar Fisio Principal / Secundario de un alumno
             const actualizarFisioResponsable = (idAlumno, campo, valor) => {
                 setCatalogoAlumnos(prev => prev.map(a => {
                     if (a.id === idAlumno) {
@@ -293,7 +285,6 @@
                 setTimeout(() => setNotificacion(null), 3000);
             };
 
-            // ALGORITMO AUTO-GENERADOR INTELIGENTE
             const generarCuadranteAutomatico = () => {
                 const piscinaActual = semana === "1" ? PISCINA_SEMANA_1 : PISCINA_SEMANA_2;
                 const copia = {
@@ -306,7 +297,6 @@
                     diasAsignadosPorAlumno[a.nombre] = new Set();
                 });
 
-                // Registrar piscina fija
                 Object.values(piscinaActual).forEach(p => {
                     if (p.alumno && diasAsignadosPorAlumno[p.alumno]) {
                         const key = Object.keys(piscinaActual).find(k => piscinaActual[k] === p);
@@ -325,7 +315,6 @@
 
                     if (asignadas >= meta) return;
 
-                    // Ordenar fisios: 1º Responsable, 2º Secundario, 3º Resto
                     const fisiosOrdenados = [];
                     if (alumno.fisioResponsable) fisiosOrdenados.push(alumno.fisioResponsable);
                     if (alumno.fisioSecundario && alumno.fisioSecundario !== alumno.fisioResponsable) fisiosOrdenados.push(alumno.fisioSecundario);
@@ -336,7 +325,6 @@
                     for (let d = 0; d < DIAS.length && asignadas < meta; d++) {
                         const dia = DIAS[d];
 
-                        // MÁXIMO 1 SESIÓN AL DÍA POR ALUMNO
                         if (diasAsignadosPorAlumno[alumno.nombre].has(dia)) continue;
 
                         let asignado = false;
@@ -345,7 +333,6 @@
                             const hora = HORARIOS_INICIO_SESION[h];
                             const horaMin = timeToMin(hora);
 
-                            // Observaciones y rutas
                             if (alumno.nombre.includes("ETHAN") && horaMin < timeToMin("10:15")) continue;
                             if (alumno.nombre.includes("VALENTINA") && horaMin < timeToMin("10:45")) continue;
                             if (alumno.nombre.includes("MARCOS") && horaMin < timeToMin("10:00")) continue;
@@ -353,9 +340,7 @@
                             if (alumno.nombre.includes("VELASCO") && horaMin >= timeToMin("14:30")) continue;
                             if (alumno.nombre.includes("BUSTAMANTE") && hora === "14:30") continue;
                             if (alumno.nombre.includes("PLAZA") && (hora !== "15:00" && hora !== "15:45" && hora !== "13:45")) continue;
-                            if (alumno.nombre.includes("RADA") && (hora !== "15:00" && hora !== "15:45")) continue;
 
-                            // Conflicto Logopedia / TO
                             const conflictoMultidisciplinar = HORARIOS_OTRAS_DISCIPLINAS.some(o => {
                                 if (o.alumno !== alumno.nombre || o.dia !== dia) return false;
                                 const oInicio = timeToMin(o.hora);
@@ -482,19 +467,28 @@
                     }));
                 }
                 setModalAsignacion(null);
+                setNotificacion({
+                    tipo: "exito",
+                    mensaje: nombreAlumno ? `Asignado ${nombreAlumno} correctamente.` : "Sesión liberada."
+                });
+                setTimeout(() => setNotificacion(null), 3000);
             };
 
             return (
-                <div className="flex flex-col min-h-screen">
+                <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100">
                     <header className="bg-slate-800/90 backdrop-blur border-b border-slate-700 sticky top-0 z-30 px-3 sm:px-6 py-3">
                         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
                             <div className="flex items-center gap-2.5 w-full md:w-auto justify-between md:justify-start">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="p-2.5 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-500/30">
-                                        <i className="fa-solid fa-hands-holding-child text-xl text-white"></i>
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-white px-3 py-1.5 rounded-xl shadow-md flex items-center justify-center">
+                                        <svg viewBox="0 0 280 85" className="h-8 w-auto">
+                                            <path d="M 35 24 A 32 18 0 0 1 125 24" fill="none" stroke="#f95700" strokeWidth="8" strokeLinecap="round" />
+                                            <text x="5" y="60" fontFamily="'Inter', sans-serif" fontWeight="800" fontSize="42" fill="#0f172a" letterSpacing="-1">atenpace</text>
+                                            <text x="75" y="80" fontFamily="'Inter', sans-serif" fontWeight="500" fontSize="16" fill="#334155" letterSpacing="0.5">mejorando vidas</text>
+                                        </svg>
                                     </div>
                                     <div>
-                                        <h1 className="text-base sm:text-lg font-bold text-white tracking-wide">Atenpace FisioPlanner</h1>
+                                        <h1 className="text-base sm:text-lg font-bold text-white tracking-wide">FisioPlanner</h1>
                                         <p className="text-[10px] sm:text-xs text-slate-400">Gestión Integrada y Multidisciplinar</p>
                                     </div>
                                 </div>
@@ -595,11 +589,16 @@
                             <div className="flex gap-4 text-slate-400 text-xs">
                                 <span><strong className="text-white">10</strong> Fisios</span>
                                 <span><strong className="text-white">36</strong> Alumnos</span>
+                                <span className="text-emerald-400 font-semibold">
+                                    <i className="fa-solid fa-circle-check mr-1"></i>
+                                    {catalogoAlumnos.filter(a => Object.values(sesiones).filter(s => s.alumno === a.nombre).length >= a.cuota).length}/{catalogoAlumnos.length} con cuota completa
+                                </span>
                                 <span className="text-indigo-400"><i className="fa-solid fa-clock mr-1"></i>Granularidad 15 min</span>
                             </div>
                         </div>
                     </div>
 
+                    {}
                     <div className="bg-slate-900 border-b border-slate-800 px-3 sm:px-6 py-2">
                         <div className="max-w-7xl mx-auto flex gap-2 overflow-x-auto pb-1 scrollbar-none">
                             <button
@@ -657,7 +656,7 @@
                     </div>
 
                     <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6">
-                        {/* VISTA 1: CUADRANTE GENERAL MATRIZ EN FRANJAS DE 15 MINUTOS CON ROWSPAN */}
+                        {}
                         {vistaActual === "matriz" && (
                             <div className="space-y-4">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-800/50 p-3.5 rounded-2xl border border-slate-700">
@@ -776,7 +775,7 @@
                             </div>
                         )}
 
-                        {/* VISTA 2: VISTA POR FISIOTERAPEUTA */}
+                        {}
                         {vistaActual === "fisio" && (
                             <div className="space-y-4">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-800/50 p-3.5 rounded-2xl border border-slate-700">
@@ -885,7 +884,7 @@
                             </div>
                         )}
 
-                        {/* VISTA 3: VISTA POR ALUMNO */}
+                        {}
                         {vistaActual === "alumno" && (
                             <div className="space-y-4">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-800/50 p-3.5 rounded-2xl border border-slate-700">
@@ -1001,7 +1000,7 @@
                             </div>
                         )}
 
-                        {/* VISTA 4: HORARIO REAL DE PISCINA */}
+                        {}
                         {vistaActual === "piscina" && (
                             <div className="space-y-4">
                                 <div className="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -1046,30 +1045,24 @@
                                         </thead>
                                         <tbody className="divide-y divide-slate-700/40">
                                             {DETALLE_PISCINA_HORARIOS.map((det, idx) => {
-                                                const piscinaActual = semana === "1" ? PISCINA_SEMANA_1 : PISCINA_SEMANA_2;
-
                                                 return (
                                                     <tr key={idx} className="hover:bg-slate-700/20">
                                                         <td className="p-2 text-center font-bold text-slate-400 border-r border-slate-700">{det.turno}</td>
                                                         <td className="p-2 text-center text-slate-300 border-r border-slate-700">{det.vestuarioEntrada}</td>
                                                         <td className="p-2 text-center font-bold text-cyan-400 border-r border-slate-700 bg-cyan-950/30">{det.aguaEntrada}</td>
                                                         
-                                                        {/* LUNES */}
                                                         <td className="p-2 border-r border-slate-700 text-center font-semibold text-cyan-200">
                                                             {idx === 0 ? "KIKE (Noe)" : idx === 1 ? "PABLO (Sandra)" : idx === 2 ? "NICOLÁS GALLEGO (Noe)" : idx === 3 ? "GONZALO (Sandra)" : "-"}
                                                         </td>
 
-                                                        {/* MARTES */}
                                                         <td className="p-2 border-r border-slate-700 text-center font-semibold text-cyan-200">
                                                             {idx === 0 ? (semana === "1" ? "INÉS (Berta)" : "COCO (Berta)") : idx === 2 ? (semana === "1" ? "LARRAURI (Berta)" : "JULIA (Berta)") : "-"}
                                                         </td>
 
-                                                        {/* MIÉRCOLES */}
                                                         <td className="p-2 border-r border-slate-700 text-center font-semibold text-cyan-200">
                                                             {idx === 0 ? (semana === "1" ? "EMMA (Violeta)" : "CARLOS GIL (Violeta)") : idx === 2 ? (semana === "1" ? "CATALEYA (Violeta)" : "TONI (Violeta)") : "-"}
                                                         </td>
 
-                                                        {/* JUEVES */}
                                                         <td className="p-2 border-r border-slate-700 text-center font-semibold text-cyan-200">
                                                             {idx === 0 ? (semana === "1" ? "ITZIAR (Esther)" : "IRENE (Esther)") : idx === 2 ? (semana === "1" ? "CARMEN (Esther)" : "BELÉN (Esther)") : "-"}
                                                         </td>
@@ -1085,7 +1078,7 @@
                             </div>
                         )}
 
-                        {/* VISTA 5: DIRECTORIO DE ALUMNOS, CUOTAS & FISIOS RESPONSABLES */}
+                        {}
                         {vistaActual === "alumnos" && (
                             <div className="space-y-4">
                                 <div className="flex flex-col sm:flex-row justify-between gap-3 bg-slate-800/50 p-3.5 rounded-2xl border border-slate-700">
@@ -1176,7 +1169,7 @@
                             </div>
                         )}
 
-                        {/* VISTA 6: AUDITORÍA & SOLAPAMIENTOS */}
+                        {}
                         {vistaActual === "auditoria" && (
                             <div className="space-y-4">
                                 <div className="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 flex items-center justify-between">
@@ -1223,10 +1216,10 @@
                         )}
                     </main>
 
-                    {/* Modal de Asignación / Edición Manual */}
+                    {}
                     {modalAsignacion && (
                         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                            <div className="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-scaleIn">
+                            <div className="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
                                 <div className="flex justify-between items-center border-b border-slate-700 pb-3">
                                     <h3 className="font-bold text-white text-sm">
                                         Asignar Sesión ({modalAsignacion.fisio} - {modalAsignacion.dia} {modalAsignacion.hora})
